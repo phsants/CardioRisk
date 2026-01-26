@@ -1,0 +1,61 @@
+# Docker Compose para desenvolvimento/teste local
+version: '3.8'
+
+services:
+  # Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: cardiorisk-db
+    environment:
+      POSTGRES_USER: cardiorisk_user
+      POSTGRES_PASSWORD: cardiorisk_pass
+      POSTGRES_DB: cardiorisk
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cardiorisk_user -d cardiorisk"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cardiorisk-api
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cardiorisk
+      DB_USER: cardiorisk_user
+      DB_PASSWORD: cardiorisk_pass
+      JWT_SECRET: sua_chave_jwt_super_secreta_mude_em_producao
+      FRONTEND_URL: http://localhost
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001/api
+    container_name: cardiorisk-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
