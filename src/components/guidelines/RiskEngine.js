@@ -607,13 +607,12 @@ class RiskEngine {
       const hasRealComplications = Array.isArray(complications) && 
         complications.some(c => c && c !== "none");
       
-      // Conta EAR (Estratificadores de Risco)
+      // Conta EAR (Estratificadores de Risco) - histórico familiar NÃO conta como EAR (apenas fator a considerar)
       let earCount = 0;
       if (clinical.has_hypertension) earCount++;
       if (clinical.is_current_smoker) earCount++;
       if (this.lipidData.hdl_c && ((this.patientData.sex === "masculino" && this.lipidData.hdl_c < 40) || 
           (this.patientData.sex === "feminino" && this.lipidData.hdl_c < 50))) earCount++;
-      if (this.familyHistoryData.has_family_history_cad) earCount++;
       
       // EMAR = complicações microvasculares ou DRC
       const hasEMAR = hasRealComplications || 
@@ -789,13 +788,13 @@ class RiskEngine {
           (clinical.has_ckd && ["4", "5"].includes(clinical.ckd_stage));
         
         if (!hasEMAR) {
+          // EAR para DM2 - histórico familiar NÃO conta (apenas fator a considerar)
           let earCount = 0;
           if (clinical.has_hypertension) earCount++;
           if (clinical.is_current_smoker) earCount++;
           if (this.lipidData.hdl_c && ((patient.sex === "masculino" && this.lipidData.hdl_c < 40) || 
               (patient.sex === "feminino" && this.lipidData.hdl_c < 50))) earCount++;
-          if (this.familyHistoryData.has_family_history_cad) earCount++;
-          
+
           if (earCount >= 1 && earCount <= 2) {
             criteria.push({
               id: "dm2_age_with_1_2_ear",
@@ -864,13 +863,13 @@ class RiskEngine {
           (clinical.has_ckd && ["4", "5"].includes(clinical.ckd_stage));
         
         if (!hasEMAR) {
+          // EAR para DM2 jovem - histórico familiar NÃO conta (apenas fator a considerar)
           let earCount = 0;
           if (clinical.has_hypertension) earCount++;
           if (clinical.is_current_smoker) earCount++;
           if (lipids.hdl_c && ((patient.sex === "masculino" && lipids.hdl_c < 40) || 
               (patient.sex === "feminino" && lipids.hdl_c < 50))) earCount++;
-          if (this.familyHistoryData.has_family_history_cad) earCount++;
-          
+
           if (earCount === 0) {
             criteria.push({
               id: "dm2_young_no_ear_no_emar",

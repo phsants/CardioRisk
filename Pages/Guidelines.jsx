@@ -110,45 +110,45 @@ export default function Guidelines() {
 
         <Tabs defaultValue="categories" className="space-y-6">
 
-          <TabsList className="bg-white shadow-sm p-1 rounded-xl">
+          <TabsList className="bg-white shadow-sm p-1 rounded-xl w-full flex flex-wrap sm:flex-nowrap overflow-x-auto gap-1 min-h-[2.75rem]">
 
-            <TabsTrigger value="categories" className="rounded-lg">
+            <TabsTrigger value="categories" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
 
-              <Heart className="w-4 h-4 mr-2" />
+              <Heart className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
 
-              Categorias de Risco
-
-            </TabsTrigger>
-
-            <TabsTrigger value="targets" className="rounded-lg">
-
-              <Target className="w-4 h-4 mr-2" />
-
-              Metas Lipídicas
+              <span className="truncate">Categorias</span>
 
             </TabsTrigger>
 
-            <TabsTrigger value="criteria" className="rounded-lg">
+            <TabsTrigger value="targets" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
 
-              <CheckCircle2 className="w-4 h-4 mr-2" />
+              <Target className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
 
-              Critérios
-
-            </TabsTrigger>
-
-            <TabsTrigger value="reference" className="rounded-lg">
-
-              <Beaker className="w-4 h-4 mr-2" />
-
-              Valores de Referência
+              <span className="truncate">Metas</span>
 
             </TabsTrigger>
 
-            <TabsTrigger value="scoring" className="rounded-lg">
+            <TabsTrigger value="criteria" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
 
-              <Activity className="w-4 h-4 mr-2" />
+              <CheckCircle2 className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
 
-              Escore
+              <span className="truncate">Critérios</span>
+
+            </TabsTrigger>
+
+            <TabsTrigger value="reference" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
+
+              <Beaker className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
+
+              <span className="truncate">Referência</span>
+
+            </TabsTrigger>
+
+            <TabsTrigger value="scoring" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
+
+              <Activity className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
+
+              <span className="truncate">Escore</span>
 
             </TabsTrigger>
 
