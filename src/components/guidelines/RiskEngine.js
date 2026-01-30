@@ -671,6 +671,7 @@ class RiskEngine {
     const lipids = this.lipidData;
     const imaging = this.imagingData;
     const patient = this.patientData;
+    const derived = this.calculateDerivedValues();
 
     // DM sem LOA - só se tem diabetes confirmado
     if (clinical.has_diabetes === true) {
@@ -729,7 +730,6 @@ class RiskEngine {
 
     // Pacientes classificados como intermediário com fator agravante
     // Verifica se escore está entre 5-20% e tem agravante (sem chamar checkIntermediateRisk recursivamente)
-    const derived = this.calculateDerivedValues();
     if (derived.risk_percentage_10y !== null && 
         derived.risk_percentage_10y >= 5 && derived.risk_percentage_10y < 20) {
       const modifiers = this.checkRiskModifiers();
