@@ -130,7 +130,7 @@ export default function AssessmentSummary({ assessment, patientData, onPrint }) 
         {/* Header Info */}
         <div className="flex items-center justify-between mb-4">
           <div className="text-sm text-gray-500">
-            {format(new Date(assessment.assessment_date), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
+            {format(assessment.assessment_date ? new Date(assessment.assessment_date) : new Date(), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
           </div>
           <Badge variant="outline" className="text-xs">
             {guideline_version}

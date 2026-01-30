@@ -132,11 +132,23 @@ function buildAssessmentFromApi(apiAssessment) {
   const cat = apiAssessment.risk_category || apiAssessment.risk_classification?.category;
   const catInfo = RISK_CATEGORIES[cat] || {};
   const rc = apiAssessment.risk_classification;
+  const ldlCurrent = apiAssessment.ldl_current ?? ad.lipids?.ldl_c;
+  const ldlTarget = apiAssessment.ldl_target ?? rc?.ldl_target ?? catInfo.ldl_target;
+  const ldlAtTarget = apiAssessment.ldl_at_target ?? (ldlCurrent != null && ldlTarget != null && ldlCurrent <= ldlTarget);
+  const reductionNeeded = ldlCurrent != null && ldlTarget != null && !ldlAtTarget && ldlCurrent > 0
+    ? Math.round(((ldlCurrent - ldlTarget) / ldlCurrent) * 100)
+    : null;
+  const nonHdlCurrent = ad.lipids?.non_hdl_c;
+  const nonHdlTarget = catInfo.non_hdl_target ?? 999;
+  const apoBCurrent = ad.lipids?.apo_b;
+  const apoBTarget = catInfo.apo_b_target ?? 999;
   return {
     risk_classification: {
       category: cat,
       name: rc?.name ?? catInfo.name ?? cat,
-      ldl_target: apiAssessment.ldl_target ?? rc?.ldl_target ?? catInfo.ldl_target,
+      ldl_target: ldlTarget,
+      non_hdl_target: catInfo.non_hdl_target,
+      apo_b_target: catInfo.apo_b_target,
       risk_percentage_10y: apiAssessment.risk_percentage_10y ?? rc?.risk_percentage_10y,
       risk_score: apiAssessment.risk_score ?? rc?.risk_score,
       upgraded: rc?.upgraded,
@@ -145,6 +157,27 @@ function buildAssessmentFromApi(apiAssessment) {
     derived_values: { non_hdl_c: ad.lipids?.non_hdl_c },
     missing_data: [],
     alerts: ad?.alerts || [],
+    assessment_date: apiAssessment.created_at || apiAssessment.assessment_date,
+    guideline_version: ad?.guideline_version || "SBC_2025",
+    lipid_targets: {
+      ldl_c: {
+        current: ldlCurrent,
+        target: ldlTarget,
+        at_target: ldlAtTarget,
+        reduction_needed: reductionNeeded,
+      },
+      non_hdl_c: nonHdlCurrent != null ? {
+        current: nonHdlCurrent,
+        target: nonHdlTarget,
+        at_target: nonHdlCurrent <= nonHdlTarget,
+      } : { current: null, target: nonHdlTarget, at_target: null },
+      apo_b: apoBCurrent != null ? {
+        current: apoBCurrent,
+        target: apoBTarget,
+        at_target: apoBCurrent <= apoBTarget,
+        estimated: false,
+      } : { current: null, target: apoBTarget, at_target: null, estimated: false },
+    },
   };
 }
 
@@ -477,18 +510,13 @@ export default function NewAssessment() {
 
     },
 
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
 
       queryClient.invalidateQueries({ queryKey: ["assessments"] });
 
       queryClient.invalidateQueries({ queryKey: ["recentAssessments"] });
 
-      // Só redireciona ao Histórico quando salvou ao finalizar (payload presente)
-      if (variables?.screeningData) {
-
-        navigate(createPageUrl("History"));
-
-      }
+      // Permanece na tela de resultado (não redireciona para Histórico)
 
     },
 

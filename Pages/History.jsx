@@ -108,6 +108,12 @@ export default function History() {
 
     if (filterStatus === "not_at_target" && a.ldl_at_target) return false;
 
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const name = (a.patient_name || "").toLowerCase();
+      if (!name.includes(q)) return false;
+    }
+
     return true;
 
   });
