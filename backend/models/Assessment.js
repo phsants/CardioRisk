@@ -22,7 +22,9 @@ export class Assessment {
     );
 
     const assessment = result.rows[0];
-    assessment.assessment_data = JSON.parse(assessment.assessment_data);
+    assessment.assessment_data = typeof assessment.assessment_data === 'string'
+      ? JSON.parse(assessment.assessment_data)
+      : assessment.assessment_data;
     return assessment;
   }
 
