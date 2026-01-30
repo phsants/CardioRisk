@@ -152,8 +152,10 @@ class RiskEngine {
     // Se não houver PAS específica, usa 130 como padrão se tem HAS (conforme diretriz)
     const sbp = clinical.systolic_bp || (clinical.has_hypertension ? 130 : null);
     if (sbp !== null && sbp !== undefined) {
-      // Assume que se tem HAS, está tratado (a menos que especificado)
-      const isTreated = clinical.has_hypertension === true;
+      // Tratada ou não: usa resposta do formulário; se não informado, assume tratado quando tem HAS
+      const isTreated = clinical.hypertension_treated !== undefined
+        ? clinical.hypertension_treated === true
+        : clinical.has_hypertension === true;
       const sbpTable = isTreated 
         ? tables.pointAssignment.sbp_treated 
         : tables.pointAssignment.sbp_untreated;
@@ -555,13 +557,7 @@ class RiskEngine {
       }
     }
 
-    // HF + DASC
-    if (this.familyHistoryData.suspected_familial_hypercholesterolemia && atherosclerotic.has_ascvd) {
-      criteria.push({
-        id: "familial_hypercholesterolemia_plus_ascvd",
-        description: "Hipercolesterolemia familiar + doença aterosclerótica",
-      });
-    }
+    // Suspeita de HF não altera a categoria de risco (apenas gera aviso na tela de resultados se houver critério forte)
 
     // LDL persistentemente muito elevado
     if (lipids.ldl_c >= 300) {
@@ -632,13 +628,7 @@ class RiskEngine {
       });
     }
 
-    // Hipercolesterolemia familiar sem DASC - só se confirmado
-    if (familyHistory.suspected_familial_hypercholesterolemia === true && atherosclerotic.has_ascvd !== true) {
-      criteria.push({
-        id: "familial_hypercholesterolemia",
-        description: "Hipercolesterolemia familiar",
-      });
-    }
+    // Suspeita de HF não altera a categoria de risco (apenas gera aviso na tela de resultados se houver critério forte)
 
     // DM com LOA ou longa duração - só se tem diabetes confirmado
     if (clinical.has_diabetes === true) {
@@ -1125,6 +1115,18 @@ class RiskEngine {
       });
     }
 
+    // Aviso: critério forte + suspeita de HF (não altera a categoria de risco)
+    const familyHistory = this.familyHistoryData;
+    const hasStrongCriterion = (lipids.ldl_c && lipids.ldl_c >= 190) ||
+      this.atheroscleroticData.has_ascvd === true ||
+      (familyHistory.family_ldl_very_high === true);
+    if (hasStrongCriterion && familyHistory.suspected_familial_hypercholesterolemia === true) {
+      alerts.push({
+        type: "info",
+        message: "ℹ️ Critério forte (LDL-c ≥ 190 mg/dL e/ou DASC e/ou LDL familiar muito elevado) associado à suspeita clínica de Hipercolesterolemia Familiar. Considerar investigação (critérios clínicos, escore Dutch Lipid Clinic, teste genético quando indicado). Este aviso não altera a categoria de risco.",
+      });
+    }
+
     // HDL baixo
     const hdlThreshold = patient.sex === "masculino" ? 40 : 50;
     if (lipids.hdl_c < hdlThreshold) {
@@ -1224,6 +1226,7 @@ class RiskEngine {
       alerts,
       missing_data: missingData,
       moulin_score: moulinScore,
+      triglycerides: this.lipidData.triglycerides,
       guideline_version: "SBC_2025",
       assessment_date: new Date().toISOString(),
     };

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
 import { createPageUrl } from "@/utils";
 
@@ -20,13 +20,11 @@ import AssessmentSummary from "@/components/results/AssessmentSummary";
 
 import RiskEngine from "@/components/guidelines/RiskEngine";
 
+import { RISK_CATEGORIES } from "@/components/guidelines/GuidelineData";
+
 import { 
 
   ArrowLeft, 
-
-  ClipboardList, 
-
-  Save, 
 
   RotateCcw,
 
@@ -63,9 +61,100 @@ const saveRiskAssessment = async (assessmentData) => {
   }
 };
 
+// Converte assessment_data do backend (formato aninhado) para o formato flat do formulário
+function assessmentDataToScreeningData(assessmentData) {
+  if (!assessmentData) return {};
+  const p = assessmentData.patient || {};
+  const lip = assessmentData.lipids || {};
+  const cl = assessmentData.clinical || {};
+  const img = assessmentData.imaging || {};
+  const fh = assessmentData.familyHistory || {};
+  return {
+    patient_name: assessmentData.patient_name ?? p.patient_name ?? null,
+    age: p.age,
+    sex: p.sex,
+    menopause_status: p.menopause_status,
+    weight: p.weight,
+    height: p.height,
+    waist_circumference: p.waist_circumference,
+    fasting: lip.fasting,
+    total_cholesterol: lip.total_cholesterol,
+    ldl_c: lip.ldl_c,
+    hdl_c: lip.hdl_c,
+    triglycerides: lip.triglycerides,
+    non_hdl_c: lip.non_hdl_c,
+    apo_b: lip.apo_b,
+    has_lp_a: lip.has_lp_a,
+    lp_a_value: lip.lp_a_value,
+    lp_a_unit: lip.lp_a_unit,
+    has_diabetes: cl.has_diabetes,
+    diabetes_duration: cl.diabetes_duration,
+    diabetes_complications: cl.diabetes_complications,
+    has_hypertension: cl.has_hypertension,
+    systolic_bp: cl.systolic_bp,
+    hypertension_treated: cl.hypertension_treated,
+    is_current_smoker: cl.is_current_smoker,
+    is_former_smoker: cl.is_former_smoker,
+    years_since_quit: cl.years_since_quit,
+    has_ckd: cl.has_ckd,
+    ckd_stage: cl.ckd_stage,
+    has_ascvd: cl.has_ascvd,
+    ascvd_type: cl.ascvd_type,
+    recurrent_events: cl.recurrent_events,
+    multivessel_disease: cl.multivessel_disease,
+    has_pancreatitis_history: cl.has_pancreatitis_history,
+    recurrent_abdominal_pain: cl.recurrent_abdominal_pain,
+    symptom_onset_age: cl.symptom_onset_age,
+    tg_previous_measurements: cl.tg_previous_measurements,
+    tg_highest_value: cl.tg_highest_value,
+    tg_previous_low: cl.tg_previous_low,
+    has_secondary_factors: cl.has_secondary_factors,
+    has_combined_familial_hyperlipidemia: cl.has_combined_familial_hyperlipidemia,
+    lipid_therapy_response: cl.lipid_therapy_response,
+    tg_reduction_percentage: cl.tg_reduction_percentage,
+    has_cac: img.has_cac,
+    cac_score: img.cac_score,
+    has_carotid_us: img.has_carotid_us,
+    carotid_plaque: img.carotid_plaque,
+    carotid_stenosis_percent: img.carotid_stenosis_percent,
+    carotid_imt_elevated: img.carotid_imt_elevated,
+    has_abdominal_aneurysm: img.has_abdominal_aneurysm,
+    has_family_history_cad: fh.has_family_history_cad,
+    affected_relatives: fh.affected_relatives,
+    family_ldl_very_high: fh.family_ldl_very_high,
+    suspected_fh: fh.suspected_fh,
+  };
+}
+
+// Monta objeto assessment para exibição a partir da resposta da API
+function buildAssessmentFromApi(apiAssessment) {
+  const ad = apiAssessment.assessment_data || {};
+  const cat = apiAssessment.risk_category || apiAssessment.risk_classification?.category;
+  const catInfo = RISK_CATEGORIES[cat] || {};
+  const rc = apiAssessment.risk_classification;
+  return {
+    risk_classification: {
+      category: cat,
+      name: rc?.name ?? catInfo.name ?? cat,
+      ldl_target: apiAssessment.ldl_target ?? rc?.ldl_target ?? catInfo.ldl_target,
+      risk_percentage_10y: apiAssessment.risk_percentage_10y ?? rc?.risk_percentage_10y,
+      risk_score: apiAssessment.risk_score ?? rc?.risk_score,
+      upgraded: rc?.upgraded,
+      originalCategory: rc?.originalCategory,
+    },
+    derived_values: { non_hdl_c: ad.lipids?.non_hdl_c },
+    missing_data: [],
+    alerts: ad?.alerts || [],
+  };
+}
+
 export default function NewAssessment() {
 
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+
+  const assessmentId = searchParams.get("id");
 
   const queryClient = useQueryClient();
 
@@ -74,6 +163,21 @@ export default function NewAssessment() {
   const [screeningData, setScreeningData] = useState(null);
 
   const [assessment, setAssessment] = useState(null);
+
+  // Carregar avaliação pelo Histórico (quando ?id=...)
+  const { data: loadedAssessment, isLoading: isLoadingAssessment } = useQuery({
+    queryKey: ["assessment", assessmentId],
+    queryFn: () => api.get(`/assessments/${assessmentId}`).then((res) => res.data),
+    enabled: !!assessmentId,
+  });
+
+  useEffect(() => {
+    if (!loadedAssessment) return;
+    const sd = assessmentDataToScreeningData(loadedAssessment.assessment_data);
+    setScreeningData(sd);
+    setAssessment(buildAssessmentFromApi(loadedAssessment));
+    setStep("results");
+  }, [loadedAssessment]);
 
   const handleScreeningComplete = (data) => {
 
@@ -139,6 +243,10 @@ export default function NewAssessment() {
 
         has_hypertension: data.has_hypertension,
 
+        systolic_bp: data.systolic_bp,
+
+        hypertension_treated: data.hypertension_treated,
+
         is_current_smoker: data.is_current_smoker,
 
         is_former_smoker: data.is_former_smoker,
@@ -148,6 +256,26 @@ export default function NewAssessment() {
         has_ckd: data.has_ckd,
 
         ckd_stage: data.ckd_stage,
+
+        has_combined_familial_hyperlipidemia: data.has_combined_familial_hyperlipidemia,
+
+        lipid_therapy_response: data.lipid_therapy_response,
+
+        tg_reduction_percentage: data.tg_reduction_percentage,
+
+        has_pancreatitis_history: data.has_pancreatitis_history,
+
+        recurrent_abdominal_pain: data.recurrent_abdominal_pain,
+
+        symptom_onset_age: data.symptom_onset_age,
+
+        tg_previous_measurements: data.tg_previous_measurements,
+
+        tg_highest_value: data.tg_highest_value,
+
+        tg_previous_low: data.tg_previous_low,
+
+        has_secondary_factors: data.has_secondary_factors,
 
       },
 
@@ -211,29 +339,38 @@ export default function NewAssessment() {
 
     setStep("results");
 
+    // Salvar automaticamente ao chegar no final (Histórico e Avaliações Recentes)
+    saveAssessmentMutation.mutate({ screeningData: data, assessment: result });
+
   };
 
   const saveAssessmentMutation = useMutation({
 
-    mutationFn: async () => {
+    mutationFn: async (payload) => {
+
+      const sd = payload?.screeningData ?? screeningData;
+
+      const a = payload?.assessment ?? assessment;
+
+      if (!sd || !a) return null;
 
       // Salvar paciente (simplificado - em produção seria mais robusto)
 
       const patient = await savePatient({
 
-        name: screeningData.patient_name || "Paciente",
+        name: sd.patient_name || "Paciente",
 
-        sex: screeningData.sex,
+        sex: sd.sex,
 
         birth_date: null,
 
-        weight: screeningData.weight,
+        weight: sd.weight,
 
-        height: screeningData.height,
+        height: sd.height,
 
-        waist_circumference: screeningData.waist_circumference,
+        waist_circumference: sd.waist_circumference,
 
-        menopause_status: screeningData.menopause_status,
+        menopause_status: sd.menopause_status,
 
       });
 
@@ -245,90 +382,93 @@ export default function NewAssessment() {
 
         exam_date: new Date().toISOString().split("T")[0],
 
-        fasting: screeningData.fasting,
+        fasting: sd.fasting,
 
-        total_cholesterol: screeningData.total_cholesterol,
+        total_cholesterol: sd.total_cholesterol,
 
-        ldl_c: screeningData.ldl_c,
+        ldl_c: sd.ldl_c,
 
-        hdl_c: screeningData.hdl_c,
+        hdl_c: sd.hdl_c,
 
-        triglycerides: screeningData.triglycerides,
+        triglycerides: sd.triglycerides,
 
-        non_hdl_c: assessment.derived_values?.non_hdl_c,
+        non_hdl_c: a.derived_values?.non_hdl_c,
 
-        apo_b: screeningData.apo_b,
+        apo_b: sd.apo_b,
 
-        lp_a: screeningData.lp_a_value,
+        lp_a: sd.lp_a_value,
 
-        lp_a_unit: screeningData.lp_a_unit,
+        lp_a_unit: sd.lp_a_unit,
 
       });
 
       // Salvar avaliação de risco completa
       const fullAssessmentData = {
         assessment_data: {
+          patient_name: sd.patient_name ?? null,
           patient: {
-            age: screeningData.age,
-            sex: screeningData.sex,
-            menopause_status: screeningData.menopause_status,
-            weight: screeningData.weight,
-            height: screeningData.height,
-            waist_circumference: screeningData.waist_circumference,
+            age: sd.age,
+            sex: sd.sex,
+            menopause_status: sd.menopause_status,
+            weight: sd.weight,
+            height: sd.height,
+            waist_circumference: sd.waist_circumference,
           },
           lipids: {
-            fasting: screeningData.fasting,
-            total_cholesterol: screeningData.total_cholesterol,
-            ldl_c: screeningData.ldl_c,
-            hdl_c: screeningData.hdl_c,
-            triglycerides: screeningData.triglycerides,
-            non_hdl_c: assessment.derived_values?.non_hdl_c,
-            apo_b: screeningData.apo_b,
-            has_lp_a: screeningData.has_lp_a,
-            lp_a_value: screeningData.lp_a_value,
-            lp_a_unit: screeningData.lp_a_unit,
+            fasting: sd.fasting,
+            total_cholesterol: sd.total_cholesterol,
+            ldl_c: sd.ldl_c,
+            hdl_c: sd.hdl_c,
+            triglycerides: sd.triglycerides,
+            non_hdl_c: a.derived_values?.non_hdl_c,
+            apo_b: sd.apo_b,
+            has_lp_a: sd.has_lp_a,
+            lp_a_value: sd.lp_a_value,
+            lp_a_unit: sd.lp_a_unit,
           },
           clinical: {
-            has_diabetes: screeningData.has_diabetes,
-            diabetes_duration: screeningData.diabetes_duration,
-            diabetes_complications: screeningData.diabetes_complications,
-            has_hypertension: screeningData.has_hypertension,
-            is_current_smoker: screeningData.is_current_smoker,
-            is_former_smoker: screeningData.is_former_smoker,
-            has_ckd: screeningData.has_ckd,
-            ckd_stage: screeningData.ckd_stage,
-            has_ascvd: screeningData.has_ascvd,
-            ascvd_type: screeningData.ascvd_type,
-            recurrent_events: screeningData.recurrent_events,
-            multivessel_disease: screeningData.multivessel_disease,
-            has_pancreatitis_history: screeningData.has_pancreatitis_history,
-            recurrent_abdominal_pain: screeningData.recurrent_abdominal_pain,
-            symptom_onset_age: screeningData.symptom_onset_age,
-            tg_previous_measurements: screeningData.tg_previous_measurements,
-            tg_highest_value: screeningData.tg_highest_value,
-            tg_previous_low: screeningData.tg_previous_low,
-            has_secondary_factors: screeningData.has_secondary_factors,
-            has_combined_familial_hyperlipidemia: screeningData.has_combined_familial_hyperlipidemia,
-            lipid_therapy_response: screeningData.lipid_therapy_response,
-            tg_reduction_percentage: screeningData.tg_reduction_percentage,
+            has_diabetes: sd.has_diabetes,
+            diabetes_duration: sd.diabetes_duration,
+            diabetes_complications: sd.diabetes_complications,
+            has_hypertension: sd.has_hypertension,
+            systolic_bp: sd.systolic_bp,
+            hypertension_treated: sd.hypertension_treated,
+            is_current_smoker: sd.is_current_smoker,
+            is_former_smoker: sd.is_former_smoker,
+            has_ckd: sd.has_ckd,
+            ckd_stage: sd.ckd_stage,
+            has_ascvd: sd.has_ascvd,
+            ascvd_type: sd.ascvd_type,
+            recurrent_events: sd.recurrent_events,
+            multivessel_disease: sd.multivessel_disease,
+            has_pancreatitis_history: sd.has_pancreatitis_history,
+            recurrent_abdominal_pain: sd.recurrent_abdominal_pain,
+            symptom_onset_age: sd.symptom_onset_age,
+            tg_previous_measurements: sd.tg_previous_measurements,
+            tg_highest_value: sd.tg_highest_value,
+            tg_previous_low: sd.tg_previous_low,
+            has_secondary_factors: sd.has_secondary_factors,
+            has_combined_familial_hyperlipidemia: sd.has_combined_familial_hyperlipidemia,
+            lipid_therapy_response: sd.lipid_therapy_response,
+            tg_reduction_percentage: sd.tg_reduction_percentage,
           },
           imaging: {
-            has_cac: screeningData.has_cac,
-            cac_score: screeningData.cac_score,
-            has_carotid_us: screeningData.has_carotid_us,
-            carotid_plaque: screeningData.carotid_plaque,
-            carotid_stenosis_percent: screeningData.carotid_stenosis_percent,
-            carotid_imt_elevated: screeningData.carotid_imt_elevated,
-            has_abdominal_aneurysm: screeningData.has_abdominal_aneurysm,
+            has_cac: sd.has_cac,
+            cac_score: sd.cac_score,
+            has_carotid_us: sd.has_carotid_us,
+            carotid_plaque: sd.carotid_plaque,
+            carotid_stenosis_percent: sd.carotid_stenosis_percent,
+            carotid_imt_elevated: sd.carotid_imt_elevated,
+            has_abdominal_aneurysm: sd.has_abdominal_aneurysm,
           },
           familyHistory: {
-            has_family_history_cad: screeningData.has_family_history_cad,
-            affected_relatives: screeningData.affected_relatives,
-            family_ldl_very_high: screeningData.family_ldl_very_high,
-            suspected_fh: screeningData.suspected_fh,
+            has_family_history_cad: sd.has_family_history_cad,
+            affected_relatives: sd.affected_relatives,
+            family_ldl_very_high: sd.family_ldl_very_high,
+            suspected_fh: sd.suspected_fh,
           },
         },
-        risk_classification: assessment.risk_classification,
+        risk_classification: a.risk_classification,
       };
 
       const savedAssessment = await saveRiskAssessment(fullAssessmentData);
@@ -337,13 +477,18 @@ export default function NewAssessment() {
 
     },
 
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
 
       queryClient.invalidateQueries({ queryKey: ["assessments"] });
 
       queryClient.invalidateQueries({ queryKey: ["recentAssessments"] });
 
-      navigate(createPageUrl("History"));
+      // Só redireciona ao Histórico quando salvou ao finalizar (payload presente)
+      if (variables?.screeningData) {
+
+        navigate(createPageUrl("History"));
+
+      }
 
     },
 
@@ -427,9 +572,23 @@ export default function NewAssessment() {
 
         {/* Content */}
 
-        {step === "screening" ? (
+        {assessmentId && (isLoadingAssessment || (loadedAssessment && !screeningData)) ? (
 
-          <AdaptiveScreening onComplete={handleScreeningComplete} />
+          <Card className="p-8 text-center">
+
+            <p className="text-gray-500">Carregando avaliação...</p>
+
+          </Card>
+
+        ) : step === "screening" ? (
+
+          <AdaptiveScreening
+
+            onComplete={handleScreeningComplete}
+
+            initialData={screeningData || {}}
+
+          />
 
         ) : (
 
@@ -471,23 +630,7 @@ export default function NewAssessment() {
 
                 <ArrowLeft className="w-4 h-4" />
 
-                Editar Dados
-
-              </Button>
-
-              <Button
-
-                onClick={() => saveAssessmentMutation.mutate()}
-
-                disabled={saveAssessmentMutation.isPending}
-
-                className="gap-2 bg-blue-600 hover:bg-blue-700"
-
-              >
-
-                <Save className="w-4 h-4" />
-
-                {saveAssessmentMutation.isPending ? "Salvando..." : "Salvar Avaliação"}
+                Voltar às perguntas
 
               </Button>
 

@@ -28,38 +28,82 @@ export default function AssessmentSummary({ assessment, patientData, onPrint }) 
   };
 
   const generateTextSummary = () => {
+    const dateStr = format(
+      assessment.assessment_date ? new Date(assessment.assessment_date) : new Date(),
+      "dd/MM/yyyy 'às' HH:mm",
+      { locale: ptBR }
+    );
+    const patientName = patientData?.patient_name?.trim() || null;
+    const criteria = risk_classification.criteria || [];
+    const lt = lipid_targets || {};
+    const ldl = lt.ldl_c || {};
+    const nonHdl = lt.non_hdl_c || {};
+    const apoB = lt.apo_b || {};
+    const status = (at) => (at ? "Na meta" : "Fora da meta");
+    const col1 = (s, w = 14) => String(s).padEnd(w);
+    const col2 = (s, w = 14) => String(s).padEnd(w);
+    const col3 = (s, w = 16) => String(s).padEnd(w);
+
     const lines = [
-      "═══════════════════════════════════════════════════════════",
-      "AVALIAÇÃO DE RISCO CARDIOVASCULAR - DIRETRIZ SBC 2025",
-      "═══════════════════════════════════════════════════════════",
       "",
-      `Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`,
+      "AVALIAÇÃO DE RISCO CARDIOVASCULAR",
+      "Diretriz SBC 2025 - Dislipidemias e Prevenção da Aterosclerose",
+      "",
+      "Data da avaliação: " + dateStr,
+      patientName ? "Paciente: " + patientName : null,
       "",
       "ESTRATIFICAÇÃO DE RISCO",
-      "───────────────────────────────────────────────────────────",
-      `Categoria: ${risk_classification.name}`,
       "",
-      "Critérios:",
-      ...risk_classification.criteria.map(c => `  • ${c.description}`),
+      "Categoria de risco: " + (risk_classification.name || "—"),
+      risk_classification.description ? risk_classification.description : null,
+      "",
+      criteria.length > 0 ? "Critérios identificados:" : null,
+      ...criteria.map((c, i) => (c?.description ? `  ${i + 1}. ${c.description}` : null)).filter(Boolean),
       "",
       "METAS LIPÍDICAS",
-      "───────────────────────────────────────────────────────────",
-      `LDL-c: ${lipid_targets.ldl_c.current} mg/dL (Meta: ≤ ${lipid_targets.ldl_c.target} mg/dL) - ${lipid_targets.ldl_c.at_target ? "✓ Na meta" : "✗ Fora da meta"}`,
+      "",
+      col1("Parâmetro") + col2("Valor atual") + col3("Meta") + "Status",
+      col1("LDL-c") + col2((ldl.current ?? "—") + " mg/dL") + col3("≤ " + (ldl.target ?? "—") + " mg/dL") + status(ldl.at_target),
     ];
 
-    if (lipid_targets.non_hdl_c.current) {
-      lines.push(`Não-HDL-c: ${Math.round(lipid_targets.non_hdl_c.current)} mg/dL (Meta: ≤ ${lipid_targets.non_hdl_c.target} mg/dL) - ${lipid_targets.non_hdl_c.at_target ? "✓ Na meta" : "✗ Fora da meta"}`);
+    if (nonHdl.current != null && nonHdl.current !== undefined) {
+      lines.push(col1("Não-HDL-c") + col2(Math.round(nonHdl.current) + " mg/dL") + col3("≤ " + (nonHdl.target ?? "—") + " mg/dL") + status(nonHdl.at_target));
+    }
+    if (apoB.current != null && apoB.current !== undefined) {
+      lines.push(col1("ApoB") + col2(Math.round(apoB.current) + " mg/dL") + col3("≤ " + (apoB.target ?? "—") + " mg/dL") + status(apoB.at_target));
+    }
+
+    if (ldl.reduction_needed != null && !ldl.at_target) {
+      lines.push("", "Redução de LDL-c necessária: " + ldl.reduction_needed + "%");
+    }
+
+    if (assessment.moulin_score?.score != null) {
+      lines.push(
+        "",
+        "ESCORE DE MOULIN (SQF) - Quilomicronemia Familiar",
+        "",
+        "Escore total: " + assessment.moulin_score.score + " pontos",
+        assessment.moulin_score.interpretationLabel ? "Interpretação: " + assessment.moulin_score.interpretationLabel : null,
+        assessment.moulin_score.recommendation ? "Recomendação: " + assessment.moulin_score.recommendation : null
+      );
     }
 
     if (alerts?.length > 0) {
-      lines.push("", "ALERTAS", "───────────────────────────────────────────────────────────");
-      alerts.forEach(a => lines.push(`  ⚠ ${a.message}`));
+      lines.push(
+        "",
+        "ALERTAS",
+        "",
+        ...alerts.map((a) => (a?.message ? "• " + a.message : null)).filter(Boolean)
+      );
     }
 
-    lines.push("", "───────────────────────────────────────────────────────────");
-    lines.push(`Baseado na ${guideline_version}`);
+    lines.push(
+      "",
+      "Referência: " + (guideline_version || "Diretriz SBC 2025") + " - Sociedade Brasileira de Cardiologia",
+      ""
+    );
 
-    return lines.join("\n");
+    return lines.filter((line) => line !== null && line !== undefined).join("\n");
   };
 
   return (

@@ -295,6 +295,13 @@ export const DUTCH_LIPID_CLINIC_CRITERIA = {
 export const SCREENING_QUESTIONS = {
   demographics: [
     {
+      id: "patient_name",
+      question: "Nome do paciente (para identificação)",
+      type: "text",
+      required: false,
+      placeholder: "Ex.: Maria Silva",
+    },
+    {
       id: "age",
       question: "Qual a idade do paciente?",
       type: "number",
@@ -431,6 +438,23 @@ export const SCREENING_QUESTIONS = {
       required: true,
     },
     {
+      id: "systolic_bp",
+      question: "Valor da Pressão Arterial Sistólica (PAS)?",
+      type: "number",
+      unit: "mmHg",
+      condition: { field: "has_hypertension", value: true },
+      required: false,
+      description: "Valor em mmHg (ex.: 120, 140)",
+    },
+    {
+      id: "hypertension_treated",
+      question: "A hipertensão está em tratamento com medicamentos?",
+      type: "boolean",
+      condition: { field: "has_hypertension", value: true },
+      required: false,
+      description: "PAS tratada ou não tratada (afeta o escore de risco)",
+    },
+    {
       id: "is_current_smoker",
       question: "O paciente fuma atualmente?",
       type: "boolean",
@@ -532,87 +556,6 @@ export const SCREENING_QUESTIONS = {
       condition: { field: "has_ascvd", value: true },
       required: false,
     },
-    // Perguntas para Escore de Moulin (Quilomicronemia Familiar)
-    {
-      id: "has_pancreatitis_history",
-      question: "O paciente tem história de pancreatite?",
-      type: "boolean",
-      required: false,
-    },
-    {
-      id: "recurrent_abdominal_pain",
-      question: "O paciente tem dor abdominal recorrente inexplicada?",
-      type: "boolean",
-      required: false,
-    },
-    {
-      id: "symptom_onset_age",
-      question: "Qual a idade de início dos sintomas relacionados a triglicerídeos elevados?",
-      type: "number",
-      unit: "anos",
-      required: false,
-      description: "Idade quando os sintomas começaram (pancreatite, dor abdominal, etc.)",
-    },
-    {
-      id: "tg_previous_measurements",
-      question: "Quantas dosagens consecutivas de TG > 885 mg/dL em jejum o paciente já teve?",
-      type: "number",
-      unit: "dosagens",
-      required: false,
-      description: "Medidas realizadas com pelo menos um mês de diferença",
-    },
-    {
-      id: "tg_highest_value",
-      question: "Qual o maior valor de TG em jejum já registrado?",
-      type: "number",
-      unit: "mg/dL",
-      required: false,
-    },
-    {
-      id: "tg_previous_low",
-      question: "O paciente já teve valores de TG < 177 mg/dL em alguma ocasião?",
-      type: "boolean",
-      required: false,
-    },
-    {
-      id: "has_secondary_factors",
-      question: "O paciente tem fatores secundários que podem elevar TG?",
-      type: "multiselect",
-      options: [
-        { value: "alcohol", label: "Uso de álcool" },
-        { value: "diabetes", label: "Diabetes" },
-        { value: "metabolic_syndrome", label: "Síndrome metabólica" },
-        { value: "hypothyroidism", label: "Hipotireoidismo" },
-        { value: "corticosteroids", label: "Corticoterapia" },
-        { value: "other_drugs", label: "Uso de outras drogas" },
-        { value: "pregnancy", label: "Gestação" },
-        { value: "ethinylestradiol", label: "Uso de etinilestradiol" },
-        { value: "none", label: "Nenhum" },
-      ],
-      required: false,
-      description: "Fatores secundários que podem causar hipertrigliceridemia",
-    },
-    {
-      id: "has_combined_familial_hyperlipidemia",
-      question: "Há história de hiperlipidemia familiar combinada?",
-      type: "boolean",
-      required: false,
-    },
-    {
-      id: "lipid_therapy_response",
-      question: "O paciente já fez terapia hipolipemiante?",
-      type: "boolean",
-      required: false,
-    },
-    {
-      id: "tg_reduction_percentage",
-      question: "Qual foi a redução percentual de TG com a terapia?",
-      type: "number",
-      unit: "%",
-      condition: { field: "lipid_therapy_response", value: true },
-      required: false,
-      description: "Redução de TG após terapia hipolipemiante",
-    },
   ],
   imaging_markers: [
     {
@@ -679,6 +622,27 @@ export const SCREENING_QUESTIONS = {
       type: "boolean",
       condition: { field: "has_family_history_cad", value: true },
       required: true,
+    },
+    {
+      id: "has_combined_familial_hyperlipidemia",
+      question: "Há história de hiperlipidemia familiar combinada?",
+      type: "boolean",
+      required: false,
+    },
+    {
+      id: "lipid_therapy_response",
+      question: "O paciente já fez terapia hipolipemiante?",
+      type: "boolean",
+      required: false,
+    },
+    {
+      id: "tg_reduction_percentage",
+      question: "Qual foi a redução percentual de TG com a terapia?",
+      type: "number",
+      unit: "%",
+      condition: { field: "lipid_therapy_response", value: true },
+      required: false,
+      description: "Redução de TG após terapia hipolipemiante",
     },
     {
       id: "suspected_fh",
@@ -891,6 +855,69 @@ export const SCORING_TABLES = {
     ],
   },
 };
+
+// Perguntas do Escore de Moulin (exibidas em modal quando TG > 500 em Exames Laboratoriais)
+export const MOULIN_MODAL_QUESTIONS = [
+  {
+    id: "has_pancreatitis_history",
+    question: "O paciente tem história de pancreatite?",
+    type: "boolean",
+    required: false,
+  },
+  {
+    id: "recurrent_abdominal_pain",
+    question: "O paciente tem dor abdominal recorrente inexplicada?",
+    type: "boolean",
+    required: false,
+  },
+  {
+    id: "symptom_onset_age",
+    question: "Qual a idade de início dos sintomas relacionados a triglicerídeos elevados?",
+    type: "number",
+    unit: "anos",
+    required: false,
+    description: "Idade quando os sintomas começaram (pancreatite, dor abdominal, etc.)",
+  },
+  {
+    id: "tg_previous_measurements",
+    question: "Quantas dosagens consecutivas de TG > 885 mg/dL em jejum o paciente já teve?",
+    type: "number",
+    unit: "dosagens",
+    required: false,
+    description: "Medidas realizadas com pelo menos um mês de diferença",
+  },
+  {
+    id: "tg_highest_value",
+    question: "Qual o maior valor de TG em jejum já registrado?",
+    type: "number",
+    unit: "mg/dL",
+    required: false,
+  },
+  {
+    id: "tg_previous_low",
+    question: "O paciente já teve valores de TG < 177 mg/dL em alguma ocasião?",
+    type: "boolean",
+    required: false,
+  },
+  {
+    id: "has_secondary_factors",
+    question: "O paciente tem fatores secundários que podem elevar TG?",
+    type: "multiselect",
+    options: [
+      { value: "alcohol", label: "Uso de álcool" },
+      { value: "diabetes", label: "Diabetes" },
+      { value: "metabolic_syndrome", label: "Síndrome metabólica" },
+      { value: "hypothyroidism", label: "Hipotireoidismo" },
+      { value: "corticosteroids", label: "Corticoterapia" },
+      { value: "other_drugs", label: "Uso de outras drogas" },
+      { value: "pregnancy", label: "Gestação" },
+      { value: "ethinylestradiol", label: "Uso de etinilestradiol" },
+      { value: "none", label: "Nenhum" },
+    ],
+    required: false,
+    description: "Fatores secundários que podem causar hipertrigliceridemia",
+  },
+];
 
 // Escore de Moulin para Quilomicronemia Familiar (SQF)
 // Quadro 3.1 - Diretriz SBC 2025

@@ -44,12 +44,25 @@ import { ptBR } from "date-fns/locale";
 
 import { RISK_CATEGORIES } from "@/components/guidelines/GuidelineData";
 
-// Função para buscar avaliações recentes - substituir pela sua implementação
+import { api } from "@/services/api";
+
+// Buscar avaliações recentes do backend (últimas 5)
 const fetchRecentAssessments = async () => {
-  // TODO: Implementar busca de avaliações recentes do backend
-  // Exemplo: const response = await fetch('/api/assessments/recent?limit=5');
-  // return response.json();
-  return [];
+  try {
+    const response = await api.get('/assessments?limit=5');
+    return (response.data || []).map((assessment) => ({
+      id: assessment.id,
+      patient_name: assessment.assessment_data?.patient_name ?? assessment.assessment_data?.patient?.patient_name ?? null,
+      risk_category: assessment.risk_category,
+      ldl_current: assessment.ldl_current,
+      ldl_target: assessment.ldl_target,
+      ldl_at_target: assessment.ldl_at_target,
+      created_date: assessment.created_at,
+    }));
+  } catch (error) {
+    console.error('Erro ao buscar avaliações recentes:', error);
+    return [];
+  }
 };
 
 export default function Home() {
@@ -412,9 +425,11 @@ export default function Home() {
 
                 {recentAssessments.map((assessment) => (
 
-                  <div
+                  <Link
 
                     key={assessment.id}
+
+                    to={`${createPageUrl("NewAssessment")}?id=${assessment.id}`}
 
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
 
@@ -441,6 +456,16 @@ export default function Home() {
                       </div>
 
                       <div>
+
+                        {assessment.patient_name && (
+
+                          <div className="font-medium text-gray-900">
+
+                            {assessment.patient_name}
+
+                          </div>
+
+                        )}
 
                         <div className="font-medium text-gray-900">
 
@@ -492,7 +517,7 @@ export default function Home() {
 
                     </div>
 
-                  </div>
+                  </Link>
 
                 ))}
 

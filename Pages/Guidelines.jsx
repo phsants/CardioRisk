@@ -110,48 +110,27 @@ export default function Guidelines() {
 
         <Tabs defaultValue="categories" className="space-y-6">
 
-          <TabsList className="bg-white shadow-sm p-1 rounded-xl w-full flex flex-wrap sm:flex-nowrap overflow-x-auto gap-1 min-h-[2.75rem]">
-
-            <TabsTrigger value="categories" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
-
-              <Heart className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
-
-              <span className="truncate">Categorias</span>
-
+          <TabsList className="bg-white shadow-sm p-1 rounded-xl w-full flex flex-nowrap gap-1 min-h-[2.75rem]">
+            <TabsTrigger value="categories" title="Categorias" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink-0 flex items-center justify-center gap-0 sm:gap-2 py-2 px-2 sm:px-3">
+              <Heart className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">Categorias</span>
             </TabsTrigger>
-
-            <TabsTrigger value="targets" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
-
-              <Target className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
-
-              <span className="truncate">Metas</span>
-
+            <TabsTrigger value="targets" title="Metas" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink-0 flex items-center justify-center gap-0 sm:gap-2 py-2 px-2 sm:px-3">
+              <Target className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">Metas</span>
             </TabsTrigger>
-
-            <TabsTrigger value="criteria" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
-
-              <CheckCircle2 className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
-
-              <span className="truncate">Critérios</span>
-
+            <TabsTrigger value="criteria" title="Critérios" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink-0 flex items-center justify-center gap-0 sm:gap-2 py-2 px-2 sm:px-3">
+              <CheckCircle2 className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">Critérios</span>
             </TabsTrigger>
-
-            <TabsTrigger value="reference" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
-
-              <Beaker className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
-
-              <span className="truncate">Referência</span>
-
+            <TabsTrigger value="reference" title="Referência" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink-0 flex items-center justify-center gap-0 sm:gap-2 py-2 px-2 sm:px-3">
+              <Beaker className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">Referência</span>
             </TabsTrigger>
-
-            <TabsTrigger value="scoring" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink basis-[calc(50%-0.25rem)] sm:basis-auto">
-
-              <Activity className="w-4 h-4 mr-1 sm:mr-2 shrink-0" />
-
-              <span className="truncate">Escore</span>
-
+            <TabsTrigger value="scoring" title="Escore" className="rounded-lg flex-1 min-w-0 shrink-0 sm:shrink-0 flex items-center justify-center gap-0 sm:gap-2 py-2 px-2 sm:px-3">
+              <Activity className="w-5 h-5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline truncate">Escore</span>
             </TabsTrigger>
-
           </TabsList>
 
 

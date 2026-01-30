@@ -17,9 +17,11 @@ import {
   CheckCircle2,
   ArrowRight,
   Calculator,
-  AlertCircle
+  AlertCircle,
+  FlaskConical,
+  X
 } from "lucide-react";
-import { SCREENING_QUESTIONS, LIPID_REFERENCE_VALUES, CALCULATIONS } from "../guidelines/GuidelineData";
+import { SCREENING_QUESTIONS, LIPID_REFERENCE_VALUES, CALCULATIONS, MOULIN_MODAL_QUESTIONS } from "../guidelines/GuidelineData";
 
 const SECTIONS = [
   { id: "demographics", title: "Dados Demográficos", icon: "👤" },
@@ -34,6 +36,7 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
   const [answers, setAnswers] = useState(initialData);
   const [alerts, setAlerts] = useState([]);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+  const [showMoulinModal, setShowMoulinModal] = useState(false);
 
   // Filtra perguntas baseado em condições
   const getVisibleQuestions = (sectionId) => {
@@ -101,20 +104,25 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
     if (questionId === "triglycerides") {
       const fasting = answers.fasting;
       
-      // Verificação específica: TG > 440 sem jejum (Recomendação 3 da Diretriz SBC 2025)
+      // Todos os alertas aplicáveis são exibidos (não se sobrepõem)
+      // TG > 440 sem jejum (Recomendação 3 da Diretriz SBC 2025)
       if (value > 440 && fasting === false) {
         lipidAlerts.push({
           questionId,
           message: "⚠️ Recomendação da Diretriz SBC 2025: Se os triglicerídeos estiverem elevados (> 440 mg/dL) em amostra sem jejum, recomenda-se nova coleta em jejum de 12 horas, de acordo com critério do médico solicitante.",
           type: "critical",
         });
-      } else if (value >= 500) {
+      }
+      // TG ≥ 500 - risco de pancreatite
+      if (value >= 500) {
         lipidAlerts.push({
           questionId,
           message: "TG ≥ 500 mg/dL - Risco de pancreatite! Verificar jejum e investigar causas secundárias.",
           type: "critical",
         });
-      } else if (value >= 400) {
+      }
+      // TG ≥ 400 - Friedewald não confiável
+      if (value >= 400) {
         lipidAlerts.push({
           questionId,
           message: "⚠️ Triglicerídeos ≥ 400 mg/dL - A fórmula de Friedewald NÃO deve ser utilizada! É necessário medir o LDL-c diretamente, pois a fórmula não é confiável quando TG ≥ 400 mg/dL.",
@@ -147,12 +155,10 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
       }
     }
 
-    if (lipidAlerts.length > 0) {
-      setAlerts((prev) => [
-        ...prev.filter((a) => a.questionId !== questionId),
-        ...lipidAlerts,
-      ]);
-    }
+    setAlerts((prev) => [
+      ...prev.filter((a) => a.questionId !== questionId),
+      ...lipidAlerts,
+    ]);
   };
 
   // Lógica adaptativa para pular seções
@@ -197,6 +203,26 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
     const value = answers[question.id];
 
     switch (question.type) {
+      case "text":
+        return (
+          <div className="space-y-2">
+            <Label htmlFor={question.id} className="text-sm font-medium text-gray-700">
+              {question.question}
+              {question.required && <span className="text-red-500 ml-1">*</span>}
+            </Label>
+            <Input
+              id={question.id}
+              type="text"
+              value={value ?? ""}
+              onChange={(e) => handleAnswer(question.id, e.target.value || null)}
+              placeholder={question.placeholder || ""}
+            />
+            {question.description && (
+              <p className="text-xs text-gray-500">{question.description}</p>
+            )}
+          </div>
+        );
+
       case "number":
         return (
           <div className="space-y-2">
@@ -545,6 +571,30 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
               {/* Calculadora de Friedewald - apenas na seção de Exames Laboratoriais */}
               {renderFriedewaldCalculator()}
 
+              {/* Card Escore de Moulin - quando TG > 500 em Exames Laboratoriais */}
+              {currentSectionData.id === "lipid_panel" && answers.triglycerides > 500 && (
+                <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-md">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-purple-900 text-lg">
+                      <FlaskConical className="w-5 h-5 text-purple-600" />
+                      Escore de Moulin (SQF) - Quilomicronemia Familiar
+                    </CardTitle>
+                    <CardDescription className="text-purple-700">
+                      TG &gt; 500 mg/dL é critério de seleção para o Escore de Moulin. Preencha os critérios para calcular a probabilidade de Quilomicronemia Familiar. O resultado aparecerá na tela de resultados como informação extra.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      onClick={() => setShowMoulinModal(true)}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white gap-2"
+                    >
+                      <FlaskConical className="w-4 h-4" />
+                      Preencher Escore de Moulin
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
               {visibleQuestions.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   <p>Não há perguntas adicionais para esta seção com base nas respostas anteriores.</p>
@@ -635,6 +685,48 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Modal Escore de Moulin - quando TG > 500 */}
+      {showMoulinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
+            onClick={() => setShowMoulinModal(false)} 
+          />
+          <Card className="relative z-50 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border-2 border-purple-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2 text-lg">
+                <FlaskConical className="w-5 h-5" />
+                Escore de Moulin (SQF) - Quilomicronemia Familiar
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 rounded-full"
+                onClick={() => setShowMoulinModal(false)}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-6 space-y-6">
+              <p className="text-sm text-gray-600">
+                Preencha os critérios abaixo. O escore será calculado ao final da avaliação e exibido na tela de resultados.
+              </p>
+              {MOULIN_MODAL_QUESTIONS.map((question) => (
+                <div key={question.id}>{renderQuestion(question)}</div>
+              ))}
+            </div>
+            <div className="p-6 border-t bg-gray-50 flex justify-end">
+              <Button
+                onClick={() => setShowMoulinModal(false)}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Concluir
+              </Button>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );

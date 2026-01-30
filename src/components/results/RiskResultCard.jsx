@@ -19,7 +19,7 @@ const RISK_ORDER = ["low", "intermediate", "high", "very_high", "extreme"];
 export default function RiskResultCard({ assessment }) {
   if (!assessment) return null;
 
-  const { risk_classification, lipid_targets, alerts, derived_values, moulin_score } = assessment;
+  const { risk_classification, lipid_targets, alerts, derived_values, moulin_score, triglycerides } = assessment;
 
   const getRiskColor = (category) => {
     const colors = {
@@ -352,6 +352,23 @@ export default function RiskResultCard({ assessment }) {
                 {moulin_score.recommendation}
               </AlertDescription>
             </Alert>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Aviso: TG > 500 mas Escore de Moulin não preenchido */}
+      {triglycerides != null && triglycerides > 500 && (!moulin_score || !moulin_score.applicable) && (
+        <Card className="border-2 border-purple-200 bg-purple-50/50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-purple-900">Triglicerídeos &gt; 500 mg/dL</p>
+                <p className="text-sm text-purple-800 mt-1">
+                  Você pode preencher o Escore de Moulin (SQF) na etapa de Exames Laboratoriais para ver a análise de probabilidade de Quilomicronemia Familiar como informação extra ao resultado.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -54,6 +54,7 @@ const fetchAssessments = async () => {
     const response = await api.get('/assessments');
     return response.data.map(assessment => ({
       id: assessment.id,
+      patient_name: assessment.assessment_data?.patient_name ?? assessment.assessment_data?.patient?.patient_name ?? null,
       risk_category: assessment.risk_category,
       ldl_current: assessment.ldl_current,
       ldl_target: assessment.ldl_target,
@@ -475,6 +476,16 @@ export default function History() {
 
                           <div className="flex items-center gap-2 mb-1">
 
+                            {assessment.patient_name && (
+
+                              <span className="font-medium text-gray-900">
+
+                                {assessment.patient_name}
+
+                              </span>
+
+                            )}
+
                             <span 
 
                               className="font-semibold"
@@ -576,6 +587,18 @@ export default function History() {
                           </Badge>
 
                         )}
+
+                        <Link to={`${createPageUrl("NewAssessment")}?id=${assessment.id}`}>
+
+                          <Button variant="outline" size="sm" className="gap-1">
+
+                            <ChevronRight className="w-4 h-4" />
+
+                            Abrir
+
+                          </Button>
+
+                        </Link>
 
                       </div>
 
