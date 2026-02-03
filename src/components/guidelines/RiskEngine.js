@@ -1097,13 +1097,8 @@ class RiskEngine {
     const clinical = this.clinicalData;
     const patient = this.patientData;
 
-    // TG muito elevado
-    if (lipids.triglycerides >= 500) {
-      alerts.push({
-        type: "critical",
-        message: "Triglicerídeos ≥ 500 mg/dL - Risco de pancreatite aguda! Investigar causas secundárias.",
-      });
-    } else if (lipids.triglycerides >= 400) {
+    // TG muito elevado (alerta de pancreatite só quando TG >= 500 e escore de Moulin NÃO preenchido; quando preenchido, o alerta do Moulin é mostrado no bloco abaixo)
+    if (lipids.triglycerides >= 400 && lipids.triglycerides < MOULIN_CHYLOMICRONEMIA_SCORE.selection_criteria.tg_threshold) {
       alerts.push({
         type: "warning",
         message: "Triglicerídeos muito elevados - Verificar jejum e considerar causas secundárias.",
@@ -1155,24 +1150,19 @@ class RiskEngine {
       });
     }
 
-    // Alerta para Quilomicronemia Familiar (TG >= 500 mg/dL) - Escore de Moulin
+    // Alerta para TG >= 500: só um crítico - se escore de Moulin preenchido mostra Moulin; senão mostra pancreatite
     if (lipids.triglycerides >= MOULIN_CHYLOMICRONEMIA_SCORE.selection_criteria.tg_threshold) {
       const moulinScore = this.calculateMoulinScore();
       if (moulinScore && moulinScore.applicable) {
         alerts.push({
           type: "critical",
-          message: `⚠️ Triglicerídeos ≥ 500 mg/dL - Escore de Moulin (SQF): ${moulinScore.score} pontos (${moulinScore.interpretationLabel}). ${moulinScore.recommendation}`,
+          message: `Triglicerídeos ≥ 500 mg/dL - Escore de Moulin (SQF): ${moulinScore.score} pontos (${moulinScore.interpretationLabel}). ${moulinScore.recommendation}`,
           moulinScore: moulinScore,
-        });
-      } else if (moulinScore && !moulinScore.applicable) {
-        alerts.push({
-          type: "warning",
-          message: `⚠️ Triglicerídeos ≥ 500 mg/dL - ${moulinScore.reason}. ${moulinScore.recommendation}`,
         });
       } else {
         alerts.push({
           type: "critical",
-          message: "⚠️ Triglicerídeos ≥ 500 mg/dL - Critério de seleção para escore de Moulin (Quilomicronemia Familiar). Verificar se amostra está em jejum e fora da fase aguda.",
+          message: "Triglicerídeos ≥ 500 mg/dL - Risco de pancreatite aguda! Investigar causas secundárias.",
         });
       }
     }

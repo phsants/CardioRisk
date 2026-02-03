@@ -38,6 +38,11 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [showMoulinModal, setShowMoulinModal] = useState(false);
 
+  // Scroll para o topo ao mudar de seção (Próximo/Voltar)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentSection]);
+
   // Filtra perguntas baseado em condições
   const getVisibleQuestions = (sectionId) => {
     const questions = SCREENING_QUESTIONS[sectionId] || [];

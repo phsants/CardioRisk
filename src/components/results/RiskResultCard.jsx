@@ -345,13 +345,6 @@ export default function RiskResultCard({ assessment }) {
               </div>
             )}
 
-            <Alert className="border-purple-300 bg-purple-50">
-              <Info className="h-4 w-4 text-purple-600" />
-              <AlertTitle className="text-purple-900">Recomendação</AlertTitle>
-              <AlertDescription className="text-purple-800">
-                {moulin_score.recommendation}
-              </AlertDescription>
-            </Alert>
           </CardContent>
         </Card>
       )}
@@ -369,11 +362,6 @@ export default function RiskResultCard({ assessment }) {
                 alert.type === "info" ? "border-gray-300 bg-gray-50" : ""
               }
             >
-              {alert.type === "critical" || alert.type === "warning" ? (
-                <AlertTriangle className="h-4 w-4" />
-              ) : (
-                <Info className="h-4 w-4" />
-              )}
               <AlertTitle>
                 {alert.type === "critical" ? "Alerta Crítico" : 
                  alert.type === "warning" ? "Atenção" :

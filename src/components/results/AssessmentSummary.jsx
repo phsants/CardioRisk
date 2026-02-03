@@ -27,6 +27,9 @@ export default function AssessmentSummary({ assessment, patientData, onPrint }) 
     navigator.clipboard.writeText(text);
   };
 
+  const stripEmojis = (str) =>
+      (str || "").replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}]|\u26A0\uFE0F?|\u2139\uFE0F?/gu, "").replace(/\s+/g, " ").trim();
+
   const generateTextSummary = () => {
     const dateStr = format(
       assessment.assessment_date ? new Date(assessment.assessment_date) : new Date(),
@@ -47,7 +50,6 @@ export default function AssessmentSummary({ assessment, patientData, onPrint }) 
     const lines = [
       "",
       "AVALIAÇÃO DE RISCO CARDIOVASCULAR",
-      "Diretriz SBC 2025 - Dislipidemias e Prevenção da Aterosclerose",
       "",
       "Data da avaliação: " + dateStr,
       patientName ? "Paciente: " + patientName : null,
@@ -62,7 +64,7 @@ export default function AssessmentSummary({ assessment, patientData, onPrint }) 
       "",
       "METAS LIPÍDICAS",
       "",
-      col1("Parâmetro") + col2("Valor atual") + col3("Meta") + "Status",
+      col1("Parâmetro") + col2("Valor atual") + col3("Meta") + " Status",
       col1("LDL-c") + col2((ldl.current ?? "—") + " mg/dL") + col3("≤ " + (ldl.target ?? "—") + " mg/dL") + status(ldl.at_target),
     ];
 
@@ -93,15 +95,11 @@ export default function AssessmentSummary({ assessment, patientData, onPrint }) 
         "",
         "ALERTAS",
         "",
-        ...alerts.map((a) => (a?.message ? "• " + a.message : null)).filter(Boolean)
+        ...alerts.map((a) => (a?.message ? "* " + stripEmojis(a.message) : null)).filter(Boolean)
       );
     }
 
-    lines.push(
-      "",
-      "Referência: " + (guideline_version || "Diretriz SBC 2025") + " - Sociedade Brasileira de Cardiologia",
-      ""
-    );
+    lines.push("");
 
     return lines.filter((line) => line !== null && line !== undefined).join("\n");
   };

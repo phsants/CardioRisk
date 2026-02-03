@@ -176,9 +176,9 @@ export default function History() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md h-full min-h-[110px] flex flex-col">
 
-            <CardContent className="p-4">
+            <CardContent className="p-4 text-center flex flex-col justify-center flex-1">
 
               <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
 
@@ -188,9 +188,9 @@ export default function History() {
 
           </Card>
 
-          <Card className="border-0 shadow-md bg-green-50">
+          <Card className="border-0 shadow-md bg-green-50 h-full min-h-[110px] flex flex-col">
 
-            <CardContent className="p-4">
+            <CardContent className="p-4 text-center flex flex-col justify-center flex-1">
 
               <div className="text-3xl font-bold text-green-600">{stats.atTarget}</div>
 
@@ -200,9 +200,9 @@ export default function History() {
 
           </Card>
 
-          <Card className="border-0 shadow-md bg-red-50">
+          <Card className="border-0 shadow-md bg-red-50 h-full min-h-[110px] flex flex-col">
 
-            <CardContent className="p-4">
+            <CardContent className="p-4 text-center flex flex-col justify-center flex-1">
 
               <div className="text-3xl font-bold text-red-600">{stats.notAtTarget}</div>
 
@@ -212,9 +212,9 @@ export default function History() {
 
           </Card>
 
-          <Card className="border-0 shadow-md bg-blue-50">
+          <Card className="border-0 shadow-md bg-blue-50 h-full min-h-[110px] flex flex-col">
 
-            <CardContent className="p-4">
+            <CardContent className="p-4 text-center flex flex-col justify-center flex-1">
 
               <div className="text-3xl font-bold text-blue-600">
 
@@ -232,9 +232,9 @@ export default function History() {
 
         {/* Filters */}
 
-        <Card className="border-0 shadow-md mb-6">
+        <Card className="border-0 shadow-md mb-2 min-h-[110px] flex flex-col">
 
-          <CardContent className="p-4">
+          <CardContent className="p-4 pt-4 pb-2 flex flex-col justify-center flex-1">
 
             <div className="flex flex-wrap gap-4">
 
@@ -326,9 +326,9 @@ export default function History() {
 
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="flex flex-col justify-center min-h-[100px]">
 
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap justify-center">
 
               {Object.values(RISK_CATEGORIES).map((cat) => (
 
@@ -643,7 +643,6 @@ export default function History() {
       </div>
 
     </div>
-
   );
 
 }
