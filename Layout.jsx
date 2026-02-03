@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
-  Heart, 
+  Heart,
   Home, 
   FilePlus, 
   History, 
@@ -94,7 +94,7 @@ export default function Layout({ children, currentPageName }) {
                 <Heart className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-gray-900">CardioRisk</h1>
+                <h1 className="font-bold text-gray-900">Calculadora</h1>
                 <p className="text-xs text-gray-500">Diretriz SBC 2025</p>
               </div>
             </Link>

@@ -98,14 +98,12 @@ export default function Home() {
         <div className="text-center mb-12">
 
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 mb-4">
-
             <Heart className="w-10 h-10 text-white" />
-
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
 
-            Avaliador de Risco Cardiovascular
+            Calculadora de Risco Cardiovascular
 
           </h1>
 
@@ -129,7 +127,7 @@ export default function Home() {
 
             <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white overflow-hidden">
 
-              <CardContent className="p-6 relative">
+              <CardContent className="pt-5 px-6 pb-6 relative">
 
                 <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full" />
 
@@ -173,7 +171,7 @@ export default function Home() {
 
             <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0">
 
-              <CardContent className="p-6">
+              <CardContent className="pt-5 px-6 pb-6">
 
                 <div className="bg-emerald-100 rounded-full w-14 h-14 flex items-center justify-center mb-4">
 
@@ -209,7 +207,7 @@ export default function Home() {
 
             <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0">
 
-              <CardContent className="p-6">
+              <CardContent className="pt-5 px-6 pb-6">
 
                 <div className="bg-purple-100 rounded-full w-14 h-14 flex items-center justify-center mb-4">
 

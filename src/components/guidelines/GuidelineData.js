@@ -922,9 +922,9 @@ export const MOULIN_MODAL_QUESTIONS = [
 // Escore de Moulin para Quilomicronemia Familiar (SQF)
 // Quadro 3.1 - Diretriz SBC 2025
 export const MOULIN_CHYLOMICRONEMIA_SCORE = {
-  // Critério de seleção: TG > 885 mg/dL (em jejum e fora da fase aguda)
+  // Critério de seleção: TG >= 500 mg/dL (em jejum e fora da fase aguda)
   selection_criteria: {
-    tg_threshold: 885, // mg/dL
+    tg_threshold: 500, // mg/dL
     requires_fasting: true,
     exclude_acute_phase: true,
   },

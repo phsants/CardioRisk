@@ -38,7 +38,7 @@ export default function Login() {
           <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4">
             <Heart className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl">CardioRisk</CardTitle>
+          <CardTitle className="text-2xl">Calculadora</CardTitle>
           <CardDescription>
             Faça login para acessar o sistema
           </CardDescription>

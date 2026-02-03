@@ -277,8 +277,8 @@ class RiskEngine {
     const lipids = this.lipidData;
     const clinical = this.clinicalData;
     
-    // Verifica critério de seleção: TG > 885 mg/dL em jejum
-    if (!lipids.triglycerides || lipids.triglycerides <= MOULIN_CHYLOMICRONEMIA_SCORE.selection_criteria.tg_threshold) {
+    // Verifica critério de seleção: TG >= 500 mg/dL em jejum
+    if (!lipids.triglycerides || lipids.triglycerides < MOULIN_CHYLOMICRONEMIA_SCORE.selection_criteria.tg_threshold) {
       return null; // Não se aplica
     }
     
@@ -485,16 +485,19 @@ class RiskEngine {
       });
     }
     
-    // Interpretação do escore
+    // Interpretação do escore (3 faixas com texto de resultado)
     let interpretation = "muito_improvável";
-    let interpretationLabel = MOULIN_CHYLOMICRONEMIA_SCORE.interpretation.very_improbable.label;
+    let interpretationLabel = "Muito improvável diagnóstico de quilomicronemia familiar";
     
     if (score >= MOULIN_CHYLOMICRONEMIA_SCORE.interpretation.very_probable.min) {
       interpretation = "muito_provável";
-      interpretationLabel = MOULIN_CHYLOMICRONEMIA_SCORE.interpretation.very_probable.label;
-    } else if (score <= MOULIN_CHYLOMICRONEMIA_SCORE.interpretation.improbable.max) {
+      interpretationLabel = "Provável diagnóstico de quilomicronemia familiar";
+    } else if (score >= 9) {
       interpretation = "improvável";
-      interpretationLabel = MOULIN_CHYLOMICRONEMIA_SCORE.interpretation.improbable.label;
+      interpretationLabel = "Improvável diagnóstico de quilomicronemia familiar";
+    } else {
+      interpretation = "muito_improvável";
+      interpretationLabel = "Muito improvável diagnóstico de quilomicronemia familiar";
     }
     
     return {
@@ -1152,24 +1155,24 @@ class RiskEngine {
       });
     }
 
-    // Alerta para Quilomicronemia Familiar (TG > 885 mg/dL) - Escore de Moulin
-    if (lipids.triglycerides > MOULIN_CHYLOMICRONEMIA_SCORE.selection_criteria.tg_threshold) {
+    // Alerta para Quilomicronemia Familiar (TG >= 500 mg/dL) - Escore de Moulin
+    if (lipids.triglycerides >= MOULIN_CHYLOMICRONEMIA_SCORE.selection_criteria.tg_threshold) {
       const moulinScore = this.calculateMoulinScore();
       if (moulinScore && moulinScore.applicable) {
         alerts.push({
           type: "critical",
-          message: `⚠️ Triglicerídeos > 885 mg/dL - Escore de Moulin (SQF): ${moulinScore.score} pontos (${moulinScore.interpretationLabel}). ${moulinScore.recommendation}`,
+          message: `⚠️ Triglicerídeos ≥ 500 mg/dL - Escore de Moulin (SQF): ${moulinScore.score} pontos (${moulinScore.interpretationLabel}). ${moulinScore.recommendation}`,
           moulinScore: moulinScore,
         });
       } else if (moulinScore && !moulinScore.applicable) {
         alerts.push({
           type: "warning",
-          message: `⚠️ Triglicerídeos > 885 mg/dL - ${moulinScore.reason}. ${moulinScore.recommendation}`,
+          message: `⚠️ Triglicerídeos ≥ 500 mg/dL - ${moulinScore.reason}. ${moulinScore.recommendation}`,
         });
       } else {
         alerts.push({
           type: "critical",
-          message: "⚠️ Triglicerídeos > 885 mg/dL - Critério de seleção para escore de Moulin (Quilomicronemia Familiar). Verificar se amostra está em jejum e fora da fase aguda.",
+          message: "⚠️ Triglicerídeos ≥ 500 mg/dL - Critério de seleção para escore de Moulin (Quilomicronemia Familiar). Verificar se amostra está em jejum e fora da fase aguda.",
         });
       }
     }

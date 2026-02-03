@@ -571,8 +571,8 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
               {/* Calculadora de Friedewald - apenas na seção de Exames Laboratoriais */}
               {renderFriedewaldCalculator()}
 
-              {/* Card Escore de Moulin - quando TG > 500 em Exames Laboratoriais */}
-              {currentSectionData.id === "lipid_panel" && answers.triglycerides > 500 && (
+              {/* Card Escore de Moulin - quando TG >= 500 em Exames Laboratoriais */}
+              {currentSectionData.id === "lipid_panel" && answers.triglycerides >= 500 && (
                 <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-md">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-purple-900 text-lg">
@@ -580,7 +580,7 @@ export default function AdaptiveScreening({ onComplete, initialData = {} }) {
                       Escore de Moulin (SQF) - Quilomicronemia Familiar
                     </CardTitle>
                     <CardDescription className="text-purple-700">
-                      TG &gt; 500 mg/dL é critério de seleção para o Escore de Moulin. Preencha os critérios para calcular a probabilidade de Quilomicronemia Familiar. O resultado aparecerá na tela de resultados como informação extra.
+                      TG ≥ 500 mg/dL é critério de seleção para o Escore de Moulin. Preencha os critérios para calcular a probabilidade de Quilomicronemia Familiar. O resultado aparecerá na tela de resultados como informação extra.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
