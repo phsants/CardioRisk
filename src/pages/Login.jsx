@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Heart, AlertCircle, Loader2 } from 'lucide-react';
+import { MouseGlow } from '@/components/ui/mouse-glow';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -32,9 +33,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-0 shadow-xl">
-        <CardHeader className="text-center space-y-2">
+    <MouseGlow className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Card className="w-full md:max-w-xl lg:max-w-2xl min-h-[480px] border-0 shadow-xl flex flex-col justify-center transition-transform duration-200 ease-out hover:-translate-y-2 hover:shadow-2xl">
+        <CardHeader className="text-center space-y-2 pt-10 px-8">
           <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4">
             <Heart className="w-8 h-8 text-white" />
           </div>
@@ -43,8 +44,8 @@ export default function Login() {
             Faça login para acessar o sistema
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="pb-10 px-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -95,7 +96,7 @@ export default function Login() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </MouseGlow>
   );
 }
 
