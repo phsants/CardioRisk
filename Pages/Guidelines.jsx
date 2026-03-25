@@ -54,6 +54,8 @@ import {
 
   INTERMEDIATE_RISK_CRITERIA,
 
+  LOW_RISK_CRITERIA,
+
   RISK_MODIFIERS,
 
   LIPID_REFERENCE_VALUES,
@@ -628,6 +630,66 @@ export default function Guidelines() {
                           <div key={criterion.id} className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
 
                             <CheckCircle2 className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+
+                            <span className="text-sm text-gray-700">{criterion.description}</span>
+
+                          </div>
+
+                        ))}
+
+                      </div>
+
+                    </AccordionContent>
+
+                  </Card>
+
+                </AccordionItem>
+
+
+
+                {/* Baixo Risco */}
+
+                <AccordionItem value="low" className="border-0">
+
+                  <Card className="border-0 shadow-md overflow-hidden">
+
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50">
+
+                      <div className="flex items-center gap-3">
+
+                        <div 
+
+                          className="w-10 h-10 rounded-full flex items-center justify-center"
+
+                          style={{ backgroundColor: RISK_CATEGORIES.low.color }}
+
+                        >
+
+                          <Heart className="w-5 h-5 text-white" />
+
+                        </div>
+
+                        <div className="text-left">
+
+                          <h3 className="font-semibold text-lg">Baixo Risco</h3>
+
+                          <p className="text-sm text-gray-500">Meta LDL-c ≤ 130 mg/dL</p>
+
+                        </div>
+
+                      </div>
+
+                    </AccordionTrigger>
+
+                    <AccordionContent className="px-6 pb-4">
+
+                      <div className="space-y-3 mt-2">
+
+                        {LOW_RISK_CRITERIA.map((criterion) => (
+
+                          <div key={criterion.id} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+
+                            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
 
                             <span className="text-sm text-gray-700">{criterion.description}</span>
 

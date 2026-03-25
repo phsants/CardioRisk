@@ -163,6 +163,15 @@ export const INTERMEDIATE_RISK_CRITERIA = [
   },
 ];
 
+// Critérios de Baixo Risco
+export const LOW_RISK_CRITERIA = [
+  {
+    id: "no_risk_factors",
+    description: "Sem fatores de risco cardiovascular significativos identificados",
+    weight: 1,
+  },
+];
+
 // Fatores Modificadores de Risco (que podem aumentar a categoria)
 export const RISK_MODIFIERS = [
   {
