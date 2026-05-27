@@ -3,14 +3,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiar arquivos de dependências
-COPY package*.json ./
+# Build context no EasyPanel é a raiz do repo (Caminho de Build: /)
+COPY backend/package*.json ./
 
 # Instalar dependências
 RUN npm ci --only=production
 
-# Copiar código fonte
-COPY . .
+# Copiar código fonte do backend
+COPY backend/ .
 
 # Expor porta
 EXPOSE 3001
