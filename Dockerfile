@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # URL da API (fixa para produção)
-ENV VITE_API_URL=https://test-risk.clifcc.easypanel.host/api
+ENV VITE_API_URL=https://www.apicardiorisck.pasolutions.tech/api
 
 # Build da aplicação
 RUN npm run build
